@@ -1,0 +1,78 @@
+// ============================================================
+// PayValidator BDV - TypeScript Types
+// ============================================================
+
+export type PaymentMethod = 'pago_movil' | 'transfer'
+
+export type OrderStatus = 'pending' | 'paid' | 'rejected' | 'expired' | 'review'
+
+export type PaymentStatus = 'unmatched' | 'matched' | 'rejected' | 'review' | 'ocr_failed'
+
+export interface Order {
+  id: string
+  reference: string
+  amount: number
+  currency: string
+  payment_method: PaymentMethod
+  customer_name: string
+  customer_id: string
+  customer_phone: string | null
+  customer_email: string | null
+  status: OrderStatus
+  created_at: string
+  expires_at: string
+  confirmed_at: string | null
+  confirmed_by: string | null
+  product_id: string
+}
+
+export interface PaymentReceived {
+  id: string
+  receipt_url: string | null
+  receipt_path: string | null
+  ocr_raw_text: string | null
+  ocr_confidence: number | null
+  source: string
+  payment_type: string | null
+  amount: number | null
+  currency: string | null
+  reference: string | null
+  sender_phone: string | null
+  sender_name: string | null
+  sender_bank: string | null
+  transaction_date: string | null
+  confirmation_code: string | null
+  matched_order_id: string | null
+  match_confidence: number | null
+  status: PaymentStatus
+  created_at: string
+  processed_at: string | null
+  // joined
+  orders?: Order | null
+}
+
+export interface PaymentLog {
+  id: string
+  order_id: string | null
+  payment_id: string | null
+  action: string
+  details: Record<string, unknown> | null
+  performed_by: string | null
+  created_at: string
+}
+
+export interface DailyStats {
+  total_orders: number
+  confirmed: number
+  in_review: number
+  total_income: number
+}
+
+export interface CheckoutFormData {
+  amount: number
+  payment_method: PaymentMethod
+  customer_name: string
+  customer_id: string
+  customer_phone: string
+  customer_email: string
+}
