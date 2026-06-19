@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Supabase · Prueba de conexión</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f5f5f4;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 2rem 1rem;
+    color: #1c1c1a;
+  }
+  .card {
+    background: #fff;
+    border: 1px solid #e5e5e3;
+    border-radius: 12px;
+    padding: 2rem;
+    width: 100%;
+    max-width: 520px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 0.25rem;
+  }
+  .header h1 { font-size: 18px; font-weight: 600; }
+  .subtitle { font-size: 13px; color: #6b6b68; margin-bottom: 1.5rem; }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: #444441;
+    margin-bottom: 5px;
+    margin-top: 1rem;
+  }
+  label:first-of-type { margin-top: 0; }
+  input, select {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid #d3d1c7;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.15s;
+    background: #fff;
+    color: #1c1c1a;
+  }
+  input:focus, select:focus { border-color: #3ECF8E; box-shadow: 0 0 0 3px rgba(62,207,142,0.15); }
+  .row { display: flex; gap: 8px; }
+  .row input, .row select { flex: 1; }
+  button {
+    width: 100%;
+    margin-top: 1.25rem;
+    padding: 10px;
+    background: #1c1c1a;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, opacity 0.15s;
+  }
+  button:hover { background: #3ECF8E; color: #fff; }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .result {
+    display: none;
+    margin-top: 1rem;
+    padding: 0.9rem 1rem;
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+  }
+  .result.success { background: #eaf3de; border: 1px solid #9bc95e; color: #3b6d11; }
+  .result.error   { background: #fcebeb; border: 1px solid #f09595; color: #a32d2d; }
+  .result.warning { background: #faeeda; border: 1px solid #fac775; color: #854f0b; }
+  .hint {
+    display: none;
+    margin-top: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: #faeeda;
+    border: 1px solid #fac775;
+    border-radius: 8px;
+    font-size: 12px;
+    color: #854f0b;
+    line-height: 1.6;
+  }
+  .log {
+    display: none;
+    margin-top: 0.75rem;
+    background: #f5f5f4;
+    border: 1px solid #e5e5e3;
+    border-radius: 8px;
+    padding: 0.9rem 1rem;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: #5f5e5a;
+    white-space: pre-wrap;
+    word-break: break-all;
+    max-height: 260px;
+    overflow-y: auto;
+  }
+  .divider { border: none; border-top: 1px solid #e5e5e3; margin: 1.5rem 0 1rem; }
+  .tip { font-size: 12px; color: #888780; margin-top: 5px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="header">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M3 12L12 3L21 12V21H15V15H9V21H3V12Z" fill="#3ECF8E"/></svg>
+    <h1>Supabase · Prueba de conexión</h1>
+  </div>
+  <p class="subtitle">payvalidator-bdv · pylylycnfpjxorlayyej.supabase.co</p>
+
+  <label for="url">Project URL</label>
+  <input id="url" type="text" value="https://pylylycnfpjxorlayyej.supabase.co" />
+
+  <label for="key">API Key <span style="font-weight:400;color:#888">(Publishable key: sb_publishable_... o anon key: eyJ...)</span></label>
+  <input id="key" type="password" placeholder="Pega tu key aquí" />
+
+  <label for="table">Tabla</label>
+  <div class="row">
+    <select id="tableSelect" onchange="document.getElementById('table').value=this.value">
+      <option value="">— elige —</option>
+      <option value="orders">orders</option>
+      <option value="payment_logs">payment_logs</option>
+      <option value="payments_received">payments_received</option>
+      <option value="system_config">system_config</option>
+    </select>
+    <input id="table" type="text" placeholder="o escribe el nombre" />
+  </div>
+
+  <label for="mode">Endpoint</label>
+  <select id="mode">
+    <option value="rest">/rest/v1/ (clásico)</option>
+    <option value="data">/api/rest/v1/ (nuevo Data API)</option>
+  </select>
+  <p class="tip">Si uno falla, prueba el otro.</p>
+
+  <button id="btn" onclick="runTest()">Probar conexión</button>
+
+  <div id="result" class="result"></div>
+  <div id="hint" class="hint"></div>
+  <div id="log" class="log"></div>
+</div>
+
+<script>
+async function runTest() {
+  const url   = document.getElementById('url').value.trim().replace(/\/$/, '');
+  const key   = document.getElementById('key').value.trim();
+  const table = document.getElementById('table').value.trim() || document.getElementById('tableSelect').value;
+  const mode  = document.getElementById('mode').value;
+  const btn   = document.getElementById('btn');
+  const resultEl = document.getElementById('result');
+  const logEl    = document.getElementById('log');
+  const hintEl   = document.getElementById('hint');
+
+  resultEl.style.display = 'none';
+  logEl.style.display    = 'none';
+  hintEl.style.display   = 'none';
+
+  if (!url || !key || !table) {
+    show('warning', '⚠ Completa URL, key y tabla antes de continuar.');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Probando…';
+
+  const base     = mode === 'data' ? '/api/rest/v1' : '/rest/v1';
+  const endpoint = `${url}${base}/${table}?select=*&limit=3`;
+
+  try {
+    const t0  = Date.now();
+    const res = await fetch(endpoint, {
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': key,
+        'Authorization': `Bearer ${key}`
+      }
+    });
+    const ms   = Date.now() - t0;
+    const body = await res.text();
+    let parsed;
+    try { parsed = JSON.parse(body); } catch(e) { parsed = body; }
+
+    logEl.style.display = 'block';
+    logEl.textContent =
+      `GET ${endpoint}\nStatus: ${res.status} ${res.statusText} · ${ms}ms\n\n` +
+      `Respuesta:\n${JSON.stringify(parsed, null, 2)}`;
+
+    if (res.ok) {
+      const n = Array.isArray(parsed) ? parsed.length : '?';
+      show('success', `✓ Conexión exitosa · ${ms}ms\nTabla: ${table} · Filas recibidas: ${n}`);
+    } else {
+      const msg = typeof parsed === 'object'
+        ? (parsed.message || parsed.hint || parsed.error || JSON.stringify(parsed))
+        : body;
+      show('error', `✗ Error ${res.status} · ${msg}`);
+      showHint(res.status, key);
+    }
+  } catch(err) {
+    show('error', `✗ ${err.message}`);
+    logEl.style.display = 'block';
+    logEl.textContent = `Error: ${err.message}\nEndpoint: ${endpoint}`;
+    hintEl.style.display = 'block';
+    hintEl.textContent =
+      '💡 "Failed to fetch" = CORS bloqueado.\n' +
+      'Supabase solo acepta peticiones desde dominios autorizados.\n\n' +
+      'Solución: abre este archivo desde tu localhost o el dominio de GitHub Pages, NO desde claude.ai ni abriendo el .html directo en el navegador como archivo:// .\n\n' +
+      'Para prueba rápida local: usa VS Code con Live Server, o ejecuta:\n' +
+      'npx serve .   →  abre http://localhost:3000';
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Probar conexión';
+}
+
+function show(type, msg) {
+  const el = document.getElementById('result');
+  el.className = 'result ' + type;
+  el.style.display = 'block';
+  el.textContent = msg;
+}
+
+function showHint(status, key) {
+  const el = document.getElementById('hint');
+  let txt = '';
+  if (status === 401 || status === 403) {
+    txt = key.startsWith('sb_publishable_')
+      ? '💡 Publishable key requiere RLS activo con policies. Ve a Authentication → Policies en Supabase y crea una policy SELECT para la tabla.'
+      : '💡 Key inválida o expirada. Copia la key completa desde Settings → API Keys.';
+  } else if (status === 404) {
+    txt = '💡 Tabla no encontrada. Verifica el nombre exacto (minúsculas) y prueba el otro endpoint en "Endpoint".';
+  }
+  if (txt) { el.style.display = 'block'; el.textContent = txt; }
+}
+</script>
+</body>
+</html>
